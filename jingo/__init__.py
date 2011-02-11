@@ -4,11 +4,13 @@ import imp
 import logging
 
 from django import http
+from django.core.cache import cache
 from django.conf import settings
 from django.template.context import get_standard_processors, Context
 from django.template import Origin
 from django.utils.importlib import import_module
 from django.utils.translation import trans_real
+from django.utils.encoding import force_unicode
 
 import jinja2
 
@@ -168,6 +170,30 @@ class Register(object):
                 return jinja2.Markup(t)
             return self.function(wrapper)
         return decorator
+
+    def cached_inclusion_tag(self, template, key, kwargs=False):
+        """
+        Adds a function to Jinja, but like Django's @inclusion_tag.
+        Caches the rendered template in 'key'.
+
+        All keyword arguments passed to the function are hashed together and form part of the key
+        """
+        def decorator(f):
+            @functools.wraps(f)
+            def wrapper(*args, **kw):
+                # Use a key including the calling kwargs.
+                key_ = key + '_'.join([getattr(v, 'pk', None) or force_unicode(v) for v in (list(args) + kw.values())])
+
+                t = cache.get(key_)
+                if t is None:
+                    context = f(*args, **kw)
+                    t = env.get_template(template).render(context)
+                    cache.set(key_, t)
+
+                return jinja2.Markup(t)
+            return self.function(wrapper)
+        return decorator
+
 
 env = get_env()
 register = Register(env)
