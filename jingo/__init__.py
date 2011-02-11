@@ -5,7 +5,8 @@ import logging
 
 from django import http
 from django.conf import settings
-from django.template.context import get_standard_processors
+from django.template.context import get_standard_processors, Context
+from django.template import Origin
 from django.utils.importlib import import_module
 from django.utils.translation import trans_real
 
@@ -18,6 +19,24 @@ log = logging.getLogger('jingo')
 
 
 _helpers_loaded = False
+
+
+class Template(jinja2.Template):
+    def render(self, context):
+        # flatten the Django Context into a single dictionary.
+        context_dict = {}
+        if isinstance(context, Context):
+            for d in getattr(context, 'dicts', []):
+                context_dict.update(d)
+        else:
+            context_dict.update(context)
+
+        if settings.TEMPLATE_DEBUG:
+            from django.test import signals
+            self.origin = Origin(self.filename)
+            signals.template_rendered.send(sender=self, template=self, context=context)
+
+        return super(Template, self).render(context_dict)
 
 
 class Environment(jinja2.Environment):
@@ -56,6 +75,7 @@ def get_env():
         opts.update(config)
 
     e = Environment(**opts)
+    e.template_class = Template
     if 'jinja2.ext.i18n' in e.extensions:
         # TODO: use real translations
         e.install_null_translations()
