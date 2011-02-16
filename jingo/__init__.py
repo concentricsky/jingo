@@ -14,7 +14,7 @@ from django.utils.encoding import force_unicode
 
 import jinja2
 
-VERSION = (0, 4)
+VERSION = (0, 4, 1)
 __version__ = '.'.join(map(str, VERSION))
 
 log = logging.getLogger('jingo')
@@ -24,7 +24,7 @@ _helpers_loaded = False
 
 
 class Template(jinja2.Template):
-    def render(self, context, **kwargs):
+    def render(self, context):
         # flatten the Django Context into a single dictionary.
         context_dict = {}
         if isinstance(context, Context):
@@ -116,7 +116,7 @@ def render_to_string(request, template, context=None):
     if not isinstance(template, jinja2.environment.Template):
         template = env.get_template(template)
 
-    return template.render(**get_context())
+    return template.render(context=get_context())
 
 
 def load_helpers():
