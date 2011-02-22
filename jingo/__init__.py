@@ -14,7 +14,7 @@ from django.utils.encoding import force_unicode
 
 import jinja2
 
-VERSION = (0, 4, 1)
+VERSION = (0, 4, 2)
 __version__ = '.'.join(map(str, VERSION))
 
 log = logging.getLogger('jingo')
@@ -24,6 +24,10 @@ _helpers_loaded = False
 
 
 class Template(jinja2.Template):
+    def __new__(cls, source, *args, **kwargs):
+        #use the shared env instead of constructing an ad-hoc one for template from source so helpers work
+        return env.from_string(source, template_class=cls)
+
     def render(self, context):
         # flatten the Django Context into a single dictionary.
         context_dict = {}
