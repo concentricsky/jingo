@@ -14,7 +14,7 @@ from django.utils.encoding import force_unicode
 
 import jinja2
 
-VERSION = (0, 4, 2)
+VERSION = (0, 4, 4)
 __version__ = '.'.join(map(str, VERSION))
 
 log = logging.getLogger('jingo')
@@ -175,7 +175,7 @@ class Register(object):
             return self.function(wrapper)
         return decorator
 
-    def cached_inclusion_tag(self, template, key, kwargs=False):
+    def cached_inclusion_tag(self, template, key, kwargs=True):
         """
         Adds a function to Jinja, but like Django's @inclusion_tag.
         Caches the rendered template in 'key'.
@@ -185,9 +185,12 @@ class Register(object):
         def decorator(f):
             @functools.wraps(f)
             def wrapper(*args, **kw):
-                # Use a key including the calling kwargs.
-                key_ = key + '_'.join([getattr(v, 'pk', None) or force_unicode(v) for v in (list(args) + kw.values())])
-
+                if kwargs and (args or kw):
+                    # Use a key including the calling kwargs.
+                    key_ = key + '_'.join([getattr(v, 'pk', None) or force_unicode(v) for v in (list(args) + kw.values())])
+                else:
+                    key_ = key
+                
                 t = cache.get(key_)
                 if t is None:
                     context = f(*args, **kw)
