@@ -13,8 +13,9 @@ from django.utils.translation import trans_real
 from django.utils.encoding import force_unicode
 
 import jinja2
+from hashlib import md5
 
-VERSION = (0, 4, 4)
+VERSION = (0, 4, 5)
 __version__ = '.'.join(map(str, VERSION))
 
 log = logging.getLogger('jingo')
@@ -190,6 +191,7 @@ class Register(object):
                     key_ = key + '_'.join([getattr(v, 'pk', None) or force_unicode(v) for v in (list(args) + kw.values())])
                 else:
                     key_ = key
+                key_ = md5(key_).hexdigest()
                 
                 t = cache.get(key_)
                 if t is None:

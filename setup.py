@@ -4,7 +4,7 @@ import os
 
 setup(
     name='jingo',
-    version='0.4.4',
+    version='0.4.5',
     description='An adapter for using Jinja2 templates with Django.',
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
     author='Jeff Balogh',
