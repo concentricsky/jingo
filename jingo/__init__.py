@@ -15,7 +15,7 @@ from django.utils.encoding import force_unicode
 import jinja2
 from hashlib import md5
 
-VERSION = (0, 4, 5)
+VERSION = (0, 4, 6)
 __version__ = '.'.join(map(str, VERSION))
 
 log = logging.getLogger('jingo')
@@ -187,12 +187,13 @@ class Register(object):
             @functools.wraps(f)
             def wrapper(*args, **kw):
                 if kwargs and (args or kw):
-                    # Use a key including the calling kwargs.
-                    key_ = key + '_'.join([getattr(v, 'pk', None) or force_unicode(v) for v in (list(args) + kw.values())])
+                    key_ = key + "_" + md5('_'.join([
+                        '_'.join([str(a) for a in args]),
+                        '_'.join(['%s_%s' % (k,v,) for k,v in kw.items()]),
+                    ])).hexdigest()
                 else:
                     key_ = key
-                key_ = md5(key_).hexdigest()
-                
+
                 t = cache.get(key_)
                 if t is None:
                     context = f(*args, **kw)
