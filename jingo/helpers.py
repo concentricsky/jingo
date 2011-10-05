@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext as _
 from django.template.defaulttags import CsrfTokenNode
 from django.utils.encoding import smart_unicode
+from django.core.urlresolvers import reverse
 
 import jinja2
 
@@ -66,3 +67,7 @@ def ifeq(a, b, text):
 def class_selected(a, b):
     """Return ``'class="selected"'`` if ``a == b``."""
     return ifeq(a, b, 'class="selected"')
+
+@register.function
+def url(viewname, *args, **kwargs):
+    return reverse(viewname, args=args, kwargs=kwargs)
