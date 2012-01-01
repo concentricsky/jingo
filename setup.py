@@ -1,11 +1,14 @@
 from setuptools import setup
 
+import os
+
+readme_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'README.rst')
 
 setup(
     name='jingo',
     version='0.4',
     description='An adapter for using Jinja2 templates with Django.',
-    long_description=open('README.rst').read(),
+    long_description=open(readme_path).read(),
     author='Jeff Balogh',
     author_email='jbalogh@mozilla.com',
     url='http://github.com/jbalogh/jingo',
